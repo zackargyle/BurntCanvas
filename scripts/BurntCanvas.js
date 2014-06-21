@@ -217,7 +217,7 @@ define([], function() {
 		pencilBatch = [];
 	}
 
-	function startSpraying(position) {
+	function startSpraying() {
 		sprayInterval = setInterval(spray, 50);
 		if (textBoxActive) {
 			textBox.parentNode.removeChild(textBox);
@@ -225,7 +225,7 @@ define([], function() {
 		}
 	}
   
-	function finishSpraying(position) {
+	function finishSpraying() {
 		clearInterval(sprayInterval);
 		var data = {
 			uniqueID: uniqueID,
@@ -280,6 +280,7 @@ define([], function() {
             setXY(e);
             if (paintType === TYPES.SPRAY) {
                 startSpraying();
+                inDraw = true;
             } else if (paintType === TYPES.TEXT) {
                 requestText();
             } else if (paintType === TYPES.PENCIL) {
