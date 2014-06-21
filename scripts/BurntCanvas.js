@@ -1,8 +1,10 @@
 define([], function() {
+	var base_url = 'https://zackargyle.firebaseIO.com/Graffiti/';
 	var uniqueID = 'xxZxAxCxKxx'.replace(/[x]/g, function(c) {
 	    var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
 	    return v.toString(16);
 	});
+	var localId = 0;
 
 	// Local Variables
 	var TYPES = {PENCIL: 0, SPRAY: 1, TEXT: 2};
@@ -13,15 +15,36 @@ define([], function() {
 	var canvas, ctx;
 	var graffitiWall;
 	var inDraw;
-	var localDrawings = [];
-	var sprayBatch    = [];
-	var pencilBatch   = [];
+	var localDrawings  = [];
+	var remoteDrawings = [];
+	var sprayBatch     = [];
+	var pencilBatch    = [];
 
 	function BurntCanvas() {}
 
 	BurntCanvas.prototype.lightMatch = function(url) {
-		graffitiWall = new Firebase('https://zackargyle.firebaseIO.com/Graffiti');
-		graffitiWall.on('child_added', handleSnapshot);
+		graffitiWall = new Firebase(base_url);
+		graffitiWall.on('child_added', function(snap) {
+			var val = snap.val();
+			if (val.uniqueID !== uniqueID) {
+				val.id = snap.name();
+				remoteDrawings.push(val);
+				paintFromObject(val);
+			} else {
+				localDrawings[localDrawings.length-1].id = snap.name();
+			}
+		});
+		graffitiWall.on('child_removed', function(snap) {
+			if (snap.val().uniqueID !== uniqueID) {
+				for (var i = 0; i < remoteDrawings.length; i++) {
+					if (remoteDrawings[i].id === snap.name()) {
+						remoteDrawings.splice(i,1);
+						drawAll();
+						return;
+					}
+				}
+			}
+		});
 		return this;
 	};
 
@@ -29,20 +52,21 @@ define([], function() {
 
 	};
 
-	function handleSnapshot(snap) {
-		var json = snap.val();
-		if (json.id === uniqueID) return;
-
-		if (json.type === TYPES.SPRAY || json.type === TYPES.PENCIL) {
-			var method = (json.type === TYPES.SPRAY) ? sprayRemote : drawRemote;
-			var arr = json.data.split('&');
+	function paintFromObject(obj) {
+		if (obj.type === TYPES.SPRAY || obj.type === TYPES.PENCIL) {
+			var method = (obj.type === TYPES.SPRAY) ? sprayRemote : drawRemote;
+			var arr = obj.data.split('&');
 			for (var i = 0, xy; i < arr.length; i++) {
-				json.data = arr[i].split('_');
-				xy = method(json, xy);
+				xy = method({
+					color: obj.color,
+					data: arr[i].split('_')
+				}, xy);
 			}
-		}else if (json.type === TYPES.TEXT) {
-			json.data = json.data.split('_');
-			writeRemoteText(json);
+		}else if (obj.type === TYPES.TEXT) {
+			writeRemoteText({
+				color: obj.color,
+				data: obj.data.split('_')
+			});
 		}
 	}
 
@@ -98,15 +122,15 @@ define([], function() {
 			sprayBatch.push([currX,currY,sprayAngle].join('_'));
 		} else if (paintType === TYPES.TEXT) {
 			var data = {
-				id: uniqueID,
+				uniqueID: uniqueID,
 				type: paintType,
 				color: paintColor,
 				data: [currX,currY,text].join('_')
 			}
+			localDrawings.push(data);
 			graffitiWall.push(data);
 		}
 	}
-
 
 	/*  ---- CANVAS PAINTING METHODS ---- */
 
@@ -183,11 +207,12 @@ define([], function() {
 	function finishDrawing() {
 		inDraw = false;
 		var data = {
-			id: uniqueID,
+			uniqueID: uniqueID,
 			type: TYPES.PENCIL,
 			color: paintColor,
 			data: pencilBatch.join('&')
 		};
+		localDrawings.push(data);
 		graffitiWall.push(data);
 		pencilBatch = [];
 	}
@@ -203,11 +228,12 @@ define([], function() {
 	function finishSpraying(position) {
 		clearInterval(sprayInterval);
 		var data = {
-			id: uniqueID,
+			uniqueID: uniqueID,
 			type: TYPES.SPRAY,
 			color: paintColor,
 			data: sprayBatch.join('&')
 		};
+		localDrawings.push(data);
 		graffitiWall.push(data);
 		sprayBatch = [];
 	}
@@ -267,8 +293,25 @@ define([], function() {
 	}
 
     function undo() {
-		var drawing = localDrawings.pop();
-		drawAll();
+    	if (localDrawings.length > 0) {
+			var toUndo = localDrawings.pop();
+			drawAll();
+			var ref = new Firebase(base_url + toUndo.id);
+			ref.remove();
+		} else {
+			console.log("No more moves to undo");
+		}
+	}
+
+	function drawAll() {
+		canvas.width = canvas.width;
+		ctx.drawImage(wallImg, 0, 0, canvas.width, canvas.height);
+		for (var i = 0; i < localDrawings.length; i++) {
+			paintFromObject(localDrawings[i]);
+		}
+		for (var i = 0; i < remoteDrawings.length; i++) {
+			paintFromObject(remoteDrawings[i]);
+		}
 	}
 
     function highlight(type) {
@@ -338,6 +381,6 @@ define([], function() {
 		});
 	}
 
-	return new BurntCanvas().lightMatch();;
+	return new BurntCanvas().lightMatch();
 
 });
