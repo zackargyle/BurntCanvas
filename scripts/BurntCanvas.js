@@ -294,10 +294,10 @@ define([], function() {
 
 	function setButtons(container) {
 		var button_list = [
-			{name: 'UNDO', fn: undo},
-			{name: 'PENCIL', fn: setToSketch},
-			{name: 'SPRAY', fn: setToSpray},
-			{name: 'TEXT', fn: setToText}
+			{name: 'undo', fn: undo},
+			{name: 'pencil', fn: setToSketch},
+			{name: 'spray', fn: setToSpray},
+			{name: 'text', fn: setToText}
 		];
 
 		for (var i = 0; i < button_list.length; i++) {
