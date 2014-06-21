@@ -272,9 +272,9 @@ define([], function() {
 	}
 
     function highlight(type) {
-		document.getElementById('SPRAY').style.backgroundColor  = (type === TYPES.SPRAY)  ? 'hsl(0,0%,75%)' : 'white';
-		document.getElementById('PENCIL').style.backgroundColor = (type === TYPES.PENCIL) ? 'hsl(0,0%,75%)' : 'white';
-		document.getElementById('TEXT').style.backgroundColor   = (type === TYPES.TEXT)   ? 'hsl(0,0%,75%)' : 'white';
+		document.getElementById('spray').style.backgroundColor  = (type === TYPES.SPRAY)  ? 'hsl(0,0%,75%)' : 'white';
+		document.getElementById('pencil').style.backgroundColor = (type === TYPES.PENCIL) ? 'hsl(0,0%,75%)' : 'white';
+		document.getElementById('text').style.backgroundColor   = (type === TYPES.TEXT)   ? 'hsl(0,0%,75%)' : 'white';
     }
 
 	function setToSpray() {
