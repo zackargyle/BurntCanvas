@@ -267,6 +267,7 @@ define([], function() {
             } else if (paintType === TYPES.PENCIL) {
                 finishDrawing();
             }
+            inDraw = false;
         } else if (type == 'move') {
             if (inDraw) {
                 setXY(e);
@@ -278,9 +279,9 @@ define([], function() {
             }
 		} else if (type == 'start') {
             setXY(e);
+            inDraw = true;
             if (paintType === TYPES.SPRAY) {
                 startSpraying();
-                inDraw = true;
             } else if (paintType === TYPES.TEXT) {
                 requestText();
             } else if (paintType === TYPES.PENCIL) {
@@ -288,7 +289,6 @@ define([], function() {
                     textBox.parentNode.removeChild(textBox);
 					textBoxActive = false;
 				}
-				inDraw = true;
             }
         }
 	}
