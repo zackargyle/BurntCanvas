@@ -1,0 +1,46 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+
+*:focus{
+    outline: 0;
+}
+
+.choice {
+    width: 35px;
+    height: 35px;
+    border: 1px solid hsl(0,0%,90%);
+}
+
+.choice:hover, #BurntCanvas:hover {
+    cursor: pointer;
+}
+
+#canvasChoices {
+    position: absolute;
+    text-align: center;
+    top: 5px;
+    right: 5px;
+}
+
+#canvasChoices p {
+    font-size: 20px;
+    padding: 5px;
+    margin: 0;
+}
+
+.choiceImg {
+    background: no-repeat center;
+    background-color: white;
+    background-size: 25px;
+}
+
+#requestText {
+    font: 15px sans-serif;
+    position: absolute;
+    background-color: hsla(0,0%,0%,.15);
+    min-width: 50px;
+    padding: 5px;
+    border: 0;
+}
