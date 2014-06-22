@@ -6,19 +6,27 @@ define([], function() {
 	});
 	var localId = 0;
 
-	// Local Variables
-	var TYPES = {PENCIL: 0, SPRAY: 1, TEXT: 2};
-	var prevX, currX, prevY, currY;
-	var paintColor = 'black', paintType;
-	var sprayInterval, sprayImg, sprayAngle = 0, sprayRadius = 10;
-	var textBox, textBoxActive;
-	var canvas, ctx;
-	var graffitiWall;
-	var inDraw;
+	// Enums
+	var Type = {pencil: 0, spray: 1, text: 2};
+	var colorMap = {
+		black: 'hsl(0,0%,0%)',
+		blue:  'hsl(236,87%,42%)',
+		green: 'hsl(127,65%,69%)',
+		red:   'hsl(0,78%,48%)',
+		white: 'hsl(0,3%,94%)'
+	}
+	var sprayImages    = {};
 	var localDrawings  = [];
 	var remoteDrawings = [];
 	var sprayBatch     = [];
 	var pencilBatch    = [];
+	var prevX, prevY, currX, currY;
+	var paintType, paintColor = 'black';
+	var sprayInterval, sprayAngle = 0, sprayRadius = 10;
+	var textBox, textBoxActive;
+	var graffitiWall, wallImg;
+	var canvas, ctx;
+	var inDraw;
 
 	function BurntCanvas() {}
 
@@ -53,8 +61,8 @@ define([], function() {
 	};
 
 	function paintFromObject(obj) {
-		if (obj.type === TYPES.SPRAY || obj.type === TYPES.PENCIL) {
-			var method = (obj.type === TYPES.SPRAY) ? sprayRemote : drawRemote;
+		if (obj.type === Type.spray || obj.type === Type.pencil) {
+			var method = (obj.type === Type.spray) ? sprayRemote : drawRemote;
 			var arr = obj.data.split('&');
 			for (var i = 0, xy; i < arr.length; i++) {
 				xy = method({
@@ -62,7 +70,7 @@ define([], function() {
 					data: arr[i].split('_')
 				}, xy);
 			}
-		}else if (obj.type === TYPES.TEXT) {
+		}else if (obj.type === Type.text) {
 			writeRemoteText({
 				color: obj.color,
 				data: obj.data.split('_')
@@ -92,10 +100,8 @@ define([], function() {
 		wallImg = new Image();
 		wallImg.src = 'img/wall.png';
 		wallImg.onload = function() {
-            ctx.drawImage(wallImg, 0, 0, canvas.width, canvas.height);
+            drawAll();
         };
-        sprayImg = new Image();
-        sprayImg.src = 'img/splatter.png';
     }
 	setImages();
 
@@ -105,22 +111,26 @@ define([], function() {
 		setButtons(container);
 		setTextBox();
 
-		var colors = ['green', 'blue', 'red', 'black', 'white'];
-		for (var i = 0; i < colors.length; i++) {
-			createColorChoice(colors[i], container);
+		for (var key in colorMap) {
+		    if (colorMap.hasOwnProperty(key)) {
+				sprayImages[key] = new Image();
+				sprayImages[key].src = 'img/spray_'+key+'.png';
+				createColorChoice(key, container);
+		    }
 		}
-		
+
 		document.getElementById('canvasChoices').appendChild(container);
 		setToSketch();
 	}
 	setChoices();
+	sprayImg = sprayImages.black;
 
 	function saveContext(text) {
-		if (paintType === TYPES.PENCIL) {
+		if (paintType === Type.pencil) {
 			pencilBatch.push([currX,currY].join('_'));
-		} else if (paintType === TYPES.SPRAY) {
+		} else if (paintType === Type.spray) {
 			sprayBatch.push([currX,currY,sprayAngle].join('_'));
-		} else if (paintType === TYPES.TEXT) {
+		} else if (paintType === Type.text) {
 			var data = {
 				uniqueID: uniqueID,
 				type: paintType,
@@ -138,7 +148,7 @@ define([], function() {
         ctx.beginPath();
         ctx.moveTo(prevX || currX, prevY || currX);
         ctx.lineTo(currX, currY);
-        ctx.strokeStyle = paintColor;
+        ctx.strokeStyle = colorMap[paintColor];
         ctx.stroke();
         ctx.closePath();
         saveContext();
@@ -154,7 +164,7 @@ define([], function() {
 		ctx.beginPath();
 		ctx.moveTo(oldX, oldY);
 		ctx.lineTo(x, y);
-		ctx.strokeStyle = data.color;
+		ctx.strokeStyle = colorMap[data.color];
 		ctx.stroke();
 		ctx.closePath();
 		return [x,y];
@@ -163,12 +173,14 @@ define([], function() {
 	function spray() {
 		sprayAngle += 41;
 		if (sprayAngle > 360) sprayAngle -=360;
+
 		ctx.save();
 		ctx.translate(currX, currY);
 		ctx.rotate(sprayAngle * Math.PI / 180);
 		ctx.translate(-currX-sprayRadius, -currY-sprayRadius);
 		ctx.drawImage(sprayImg, currX, currY, sprayRadius*2, sprayRadius*2);
 		ctx.restore();
+
 		saveContext();
 	}
 
@@ -181,12 +193,12 @@ define([], function() {
 		ctx.translate(x, y);
 		ctx.rotate(angle * Math.PI / 180);
 		ctx.translate(-x-sprayRadius, -y-sprayRadius);
-		ctx.drawImage(sprayImg, x, y, sprayRadius*2, sprayRadius*2);
+		ctx.drawImage(sprayImages[data.color], x, y, sprayRadius*2, sprayRadius*2);
 		ctx.restore();
 	}
 
 	function writeText(text) {
-		ctx.fillStyle = paintColor;
+		ctx.fillStyle = colorMap[paintColor];
 		ctx.font = '15px sans-serif';
 		ctx.fillText(text, currX + 7, currY + 20);
 		saveContext(text);
@@ -197,7 +209,7 @@ define([], function() {
 		var x = parseInt(json.data[0]);
 		var y = parseInt(json.data[1]);
 		var text = json.data[2];
-		ctx.fillStyle = json.color;
+		ctx.fillStyle = colorMap[json.color];
 		ctx.font = '15px sans-serif';
 		ctx.fillText(text, x + 7, y + 20);
 	}
@@ -208,7 +220,7 @@ define([], function() {
 		inDraw = false;
 		var data = {
 			uniqueID: uniqueID,
-			type: TYPES.PENCIL,
+			type: Type.pencil,
 			color: paintColor,
 			data: pencilBatch.join('&')
 		};
@@ -229,10 +241,11 @@ define([], function() {
 		clearInterval(sprayInterval);
 		var data = {
 			uniqueID: uniqueID,
-			type: TYPES.SPRAY,
+			type: Type.spray,
 			color: paintColor,
 			data: sprayBatch.join('&')
 		};
+
 		localDrawings.push(data);
 		graffitiWall.push(data);
 		sprayBatch = [];
@@ -243,7 +256,7 @@ define([], function() {
 			textBoxActive = true;
 			textBox.style.left = currX + 'px';
 			textBox.style.top  = currY + 'px';
-			textBox.style.color = paintColor;
+			textBox.style.color = colorMap[paintColor];
 			document.body.appendChild(textBox);
 		}
 	}
@@ -262,29 +275,29 @@ define([], function() {
 
 	function canvasEvent(type, e) {
 		if (type == 'stop') {
-            if (paintType === TYPES.SPRAY) {
+            if (paintType === Type.spray) {
                 finishSpraying();
-            } else if (paintType === TYPES.PENCIL) {
+            } else if (paintType === Type.pencil) {
                 finishDrawing();
             }
             inDraw = false;
         } else if (type == 'move') {
             if (inDraw) {
                 setXY(e);
-                if (paintType === TYPES.PENCIL) {
+                if (paintType === Type.pencil) {
                     draw();
-                } else if (paintType === TYPES.TEXT) {
+                } else if (paintType === Type.text) {
                     moveText();
                 }
             }
 		} else if (type == 'start') {
             setXY(e);
             inDraw = true;
-            if (paintType === TYPES.SPRAY) {
+            if (paintType === Type.spray) {
                 startSpraying();
-            } else if (paintType === TYPES.TEXT) {
+            } else if (paintType === Type.text) {
                 requestText();
-            } else if (paintType === TYPES.PENCIL) {
+            } else if (paintType === Type.pencil) {
                 if (textBoxActive) {
                     textBox.parentNode.removeChild(textBox);
 					textBoxActive = false;
@@ -316,24 +329,24 @@ define([], function() {
 	}
 
     function highlight(type) {
-		document.getElementById('spray').style.backgroundColor  = (type === TYPES.SPRAY)  ? 'hsl(0,0%,75%)' : 'white';
-		document.getElementById('pencil').style.backgroundColor = (type === TYPES.PENCIL) ? 'hsl(0,0%,75%)' : 'white';
-		document.getElementById('text').style.backgroundColor   = (type === TYPES.TEXT)   ? 'hsl(0,0%,75%)' : 'white';
+		document.getElementById('spray').style.backgroundColor  = (type === Type.spray)  ? 'hsl(0,0%,75%)' : 'white';
+		document.getElementById('pencil').style.backgroundColor = (type === Type.pencil) ? 'hsl(0,0%,75%)' : 'white';
+		document.getElementById('text').style.backgroundColor   = (type === Type.text)   ? 'hsl(0,0%,75%)' : 'white';
     }
 
 	function setToSpray() {
-		paintType = TYPES.SPRAY;
-		highlight(TYPES.SPRAY);
+		paintType = Type.spray;
+		highlight(Type.spray);
 	}
 
 	function setToSketch() {
-		paintType = TYPES.PENCIL;
-		highlight(TYPES.PENCIL);
+		paintType = Type.pencil;
+		highlight(Type.pencil);
 	}
 
 	function setToText() {
-		paintType = TYPES.TEXT;
-		highlight(TYPES.TEXT);
+		paintType = Type.text;
+		highlight(Type.text);
 	}
 
 	function setButtons(container) {
@@ -359,9 +372,10 @@ define([], function() {
 	function createColorChoice(color, container) {
 		var node = document.createElement('div');
 		node.className = 'choice';
-		node.style.backgroundColor = color;
+		node.style.backgroundColor = colorMap[color];
 		node.addEventListener('click', function() {
 			paintColor = color;
+			sprayImg = sprayImages[color];
 		});
 		container.appendChild(node);
 	}
