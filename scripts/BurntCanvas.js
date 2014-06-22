@@ -27,6 +27,7 @@ define([], function() {
 	var graffitiWall, wallImg;
 	var canvas, ctx;
 	var inDraw;
+	var ready;
 
 	function BurntCanvas() {}
 
@@ -37,7 +38,9 @@ define([], function() {
 			if (val.uniqueID !== uniqueID) {
 				val.id = snap.name();
 				remoteDrawings.push(val);
-				paintFromObject(val);
+				if (ready) {
+					paintFromObject(val);
+				}
 			} else {
 				localDrawings[localDrawings.length-1].id = snap.name();
 			}
@@ -100,6 +103,7 @@ define([], function() {
 		wallImg = new Image();
 		wallImg.src = 'img/wall.png';
 		wallImg.onload = function() {
+			ready = true;
             drawAll();
         };
     }
