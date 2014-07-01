@@ -11,7 +11,7 @@ define([], function() {
 	var colorMap = {
 		black: 'hsl(0,0%,0%)',
 		blue:  'hsl(236,87%,42%)',
-		green: 'hsl(127,65%,69%)',
+		green: 'hsl(107,45%,40%)',
 		red:   'hsl(0,78%,48%)',
 		white: 'hsl(0,3%,94%)'
 	}
