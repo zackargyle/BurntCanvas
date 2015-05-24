@@ -10,14 +10,27 @@
       img.src = 'img/wall.png';
     })
     </script>
-    <script data-main="scripts/main" src="scripts/require.min.js"></script>
-  </head> 
+  </head>
 
   <body>
 
-  <div id="canvasChoices"></div>
-  <canvas id="BurntCanvas"></canvas>
+  <div id="canvasChoices">
+    <div>
+      <div id="undo" class="choice choiceImg"></div>
+      <div id="pencil" class="choice choiceImg"></div>
+      <div id="spray" class="choice choiceImg"></div>
+      <div id="text" class="choice choiceImg"></div>
+      <div class="choice color black" data-color="black"></div>
+      <div class="choice color blue" data-color="blue"></div>
+      <div class="choice color green" data-color="green"></div>
+      <div class="choice color red" data-color="red"></div>
+      <div class="choice color white" data-color="white"></div>
+    </div>
+  </div>
+  <canvas id="graffiti"></canvas>
 
+  <script src="scripts/GraffitiWall.js"></script>
+  <script src="scripts/app.js"></script>
   </body>
 
 </html>

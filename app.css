@@ -1,11 +1,14 @@
 body {
     margin: 0;
     padding: 0;
-    background-color: hsla(100,10%,6%,0.45);
 }
 
 *:focus{
     outline: 0;
+}
+
+#graffiti {
+    background-image: url(img/wall.png);
 }
 
 #logo {
@@ -19,7 +22,7 @@ body {
     border: 1px solid hsl(0,0%,90%);
 }
 
-.choice:hover, #BurntCanvas:hover {
+.choice:hover, #graffiti:hover {
     cursor: pointer;
 }
 
@@ -40,6 +43,43 @@ body {
     background: no-repeat center;
     background-color: white;
     background-size: 25px;
+}
+
+#undo {
+    background-image: url(img/undo.png);
+}
+
+#pencil {
+    background-image: url(img/pencil.png);
+    background-color: hsl(0,0%,75%);
+}
+
+#spray {
+    background-image: url(img/spray.png);
+}
+
+#text {
+    background-image: url(img/text.png);
+}
+
+.color.black {
+    background-color: hsl(0, 0%, 0%);
+}
+
+.color.blue {
+    background-color: hsl(236, 87%, 42%);
+}
+
+.color.green {
+    background-color: hsl(107, 45%, 40%);
+}
+
+.color.red {
+    background-color: hsl(0, 78%, 48%);
+}
+
+.color.white {
+    background-color: hsl(0, 3%, 94%);
 }
 
 #requestText {
