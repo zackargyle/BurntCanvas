@@ -9,6 +9,8 @@ body {
 
 #graffiti {
     background-image: url(img/wall.png);
+    opacity: 0;
+    transition: opacity .1s ease;
 }
 
 #logo {

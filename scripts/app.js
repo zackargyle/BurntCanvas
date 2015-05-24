@@ -9,11 +9,17 @@ console.log(
 var App = {}
 
 App.init = function() {
-    this.loadLogo();
+    this.loadImages();
     this.initGraffiti();
 };
 
-App.loadLogo = function() {
+App.loadImages = function() {
+    var background = new Image();
+    background.src = 'img/wall.png';
+    background.onload = function() {
+        document.getElementById('graffiti').style.opacity = 1;
+    };
+
     var logoImg = new Image(500,180);
     logoImg.src = 'img/logo.png';
     logoImg.id  = 'logo';

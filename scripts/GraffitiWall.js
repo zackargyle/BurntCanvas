@@ -73,7 +73,7 @@
     /*          INIT METHODS            */
 
     GraffityWall.prototype.init = function(config) {
-        this.UNIQUE_ID = config.uniqueId || Utils.createUniqueId();
+        this.UNIQUE_ID = Utils.createUniqueId();
         this.FIREBASE_URL = config.firebase;
 
         this.remoteDrawings = [];
@@ -97,13 +97,11 @@
 
     GraffityWall.prototype.initRemoteAdded = function() {
         this.firebase.on('child_added', function(snap) {
-            var val = snap.val();
-            if (val.uniqueID !== this.UNIQUE_ID) {
-                val.id = snap.name();
-                this.remoteDrawings.push(val);
-                if (this.ready) {
-                    this.paintFromObject(val);
-                }
+            var data = snap.val();
+            if (data.uniqueID !== this.UNIQUE_ID) {
+                data.id = snap.name();
+                this.remoteDrawings.push(data);
+                this.paintFromObject(data);
             } else {
                 this.localDrawings[this.localDrawings.length-1].id = snap.name();
             }
