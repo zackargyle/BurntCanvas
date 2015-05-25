@@ -2,7 +2,7 @@
 console.log(
 	"  _    _    _    _    _    _    _    _"           + "\n" +
 	" / \\  / \\  / \\  / \\  / \\  / \\  / \\  / \\ " + "\n" +
-	"( G )( r )( a )( f )( f )( i )( t )( y )"         + "\n" +
+	"( G )( r )( a )( f )( f )( i )( t )( i )"         + "\n" +
 	" \\_/  \\_/  \\_/  \\_/  \\_/  \\_/  \\_/  \\_/ " + "\n"
 );
 
@@ -31,7 +31,7 @@ App.loadImages = function() {
 };
 
 App.initGraffiti = function() {
-    this.wall = new GraffityWall({
+    this.wall = new Graffiti({
         canvas: '#graffiti',
         firebase: 'https://zackargyle.firebaseIO.com/Graffiti/',
         height: window.innerHeight,

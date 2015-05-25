@@ -16,7 +16,7 @@
         text: 2
     };
 
-    var GraffityWall = function(config) {
+    var Graffiti = function(config) {
         this.init(config);
         this.initChoices();
         this.initTextBox();
@@ -30,13 +30,13 @@
         this.render();
     };
 
-    GraffityWall.prototype.render = function() {
+    Graffiti.prototype.render = function() {
         this.canvas.width = this.canvas.width;
         this.localDrawings.forEach(this.paintFromObject.bind(this));
         this.remoteDrawings.forEach(this.paintFromObject.bind(this));
     };
 
-    GraffityWall.prototype.save = function(data) {
+    Graffiti.prototype.save = function(data) {
         if (data) {
             var json = {
                 uniqueID: this.UNIQUE_ID,
@@ -49,7 +49,7 @@
         }
     };
 
-    GraffityWall.prototype.undo = function() {
+    Graffiti.prototype.undo = function() {
         if (this.localDrawings.length > 0) {
             var drawing = this.localDrawings.pop();
             var ref = new Firebase(this.FIREBASE_URL + drawing.id);
@@ -60,7 +60,7 @@
         }
     };
 
-    GraffityWall.prototype.saveContext = function(text) {
+    Graffiti.prototype.saveContext = function(text) {
         if (this.type === TYPES.pencil) {
             this.pencilBatch.push([this.curr.x, this.curr.y].join('_'));
         } else if (this.type === TYPES.spray) {
@@ -72,7 +72,7 @@
 
     /*          INIT METHODS            */
 
-    GraffityWall.prototype.init = function(config) {
+    Graffiti.prototype.init = function(config) {
         this.UNIQUE_ID = Utils.createUniqueId();
         this.FIREBASE_URL = config.firebase;
 
@@ -95,7 +95,7 @@
         this.ready = false;
     };
 
-    GraffityWall.prototype.initRemoteAdded = function() {
+    Graffiti.prototype.initRemoteAdded = function() {
         this.firebase.on('child_added', function(snap) {
             var data = snap.val();
             if (data.uniqueID !== this.UNIQUE_ID) {
@@ -108,7 +108,7 @@
         }.bind(this));
     };
 
-    GraffityWall.prototype.initRemoteRemoved = function() {
+    Graffiti.prototype.initRemoteRemoved = function() {
         this.firebase.on('child_removed', function(snap) {
             if (snap.val().uniqueID !== this.UNIQUE_ID) {
                 Utils.removeById(this.remoteDrawings, snap.name());
@@ -117,7 +117,7 @@
         }.bind(this));
     };
 
-    GraffityWall.prototype.initImages = function(backgroundSrc) {
+    Graffiti.prototype.initImages = function(backgroundSrc) {
         Object.keys(COLORS).forEach(function(color) {
             this.sprayImages[color] = new Image();
             this.sprayImages[color].src = 'img/spray_'+color+'.png';
@@ -125,7 +125,7 @@
         this.sprayImage = this.sprayImages.black;
     };
 
-    GraffityWall.prototype.initCanvas = function(config) {
+    Graffiti.prototype.initCanvas = function(config) {
         this.canvas = document.querySelector(config.canvas);
         this.canvas.width = config.width;
         this.canvas.height = config.height;
@@ -142,7 +142,7 @@
         }.bind(this), false);
     };
 
-    GraffityWall.prototype.initChoices = function() {
+    Graffiti.prototype.initChoices = function() {
         // Type CHOICES
         var types = document.querySelectorAll('.choiceImg');
         [].forEach.call(types, function(choice) {
@@ -163,7 +163,7 @@
         }.bind(this));
     };
 
-    GraffityWall.prototype.initTextBox = function() {
+    Graffiti.prototype.initTextBox = function() {
         this.textBox = document.createElement('input');
         this.textBox.id = 'requestText';
         this.textBox.setAttribute('autofocus', true);
@@ -180,7 +180,7 @@
 
     /*          EVENT HANDLERS          */
 
-    GraffityWall.prototype.canvasEvent = function(type, e) {
+    Graffiti.prototype.canvasEvent = function(type, e) {
         if (type == 'stop') {
             this.stop();
         } else if (type == 'move') {
@@ -190,7 +190,7 @@
         }
     };
 
-    GraffityWall.prototype.start = function(e) {
+    Graffiti.prototype.start = function(e) {
         this.inDraw = true;
         this.setXY(e);
         if (this.type === TYPES.spray) {
@@ -202,7 +202,7 @@
         }
     };
 
-    GraffityWall.prototype.stop = function() {
+    Graffiti.prototype.stop = function() {
         if (this.type === TYPES.spray) {
             this.finishSpraying();
         } else if (this.type === TYPES.pencil) {
@@ -211,7 +211,7 @@
         this.inDraw = false;
     };
 
-    GraffityWall.prototype.move = function(e) {
+    Graffiti.prototype.move = function(e) {
         if (this.inDraw) {
             this.setXY(e);
             if (this.type === TYPES.pencil) {
@@ -222,7 +222,7 @@
         }
     };
 
-    GraffityWall.prototype.setXY = function(e) {
+    Graffiti.prototype.setXY = function(e) {
         this.prev.x = this.curr.x;
         this.prev.y = this.curr.y;
         this.curr.x = e.clientX - this.canvas.offsetLeft;
@@ -231,7 +231,7 @@
 
     /*          PAINT METHODS           */
 
-    GraffityWall.prototype.draw = function(currX, currY, prevX, prevY, color) {
+    Graffiti.prototype.draw = function(currX, currY, prevX, prevY, color) {
         this.ctx.beginPath();
         this.ctx.moveTo(prevX || currX, prevY || currX);
         this.ctx.lineTo(currX, currY);
@@ -240,12 +240,12 @@
         this.ctx.closePath();
     };
 
-    GraffityWall.prototype.drawLocal = function() {
+    Graffiti.prototype.drawLocal = function() {
         this.draw(this.curr.x, this.curr.y, this.prev.x, this.prev.y, this.color);
         this.saveContext();
     }
 
-    GraffityWall.prototype.drawRemote = function(data, prevXY) {
+    Graffiti.prototype.drawRemote = function(data, prevXY) {
         var currX = parseInt(data.data[0]);
         var currY = parseInt(data.data[1]);
         var prevX = prevXY ? prevXY[0] : currX;
@@ -255,7 +255,7 @@
         return [currX, currY];
     };
 
-    GraffityWall.prototype.spray = function(x, y, angle, img) {
+    Graffiti.prototype.spray = function(x, y, angle, img) {
         this.ctx.save();
         this.ctx.translate(x, y);
         this.ctx.rotate(angle * Math.PI / 180);
@@ -264,39 +264,39 @@
         this.ctx.restore();
     }
 
-    GraffityWall.prototype.sprayLocal = function() {
+    Graffiti.prototype.sprayLocal = function() {
         this.angle += 41;
         if (this.angle > 360) this.angle -=360;
         this.spray(this.curr.x, this.curr.y, this.angle, this.sprayImage);
         this.saveContext();
     };
 
-    GraffityWall.prototype.sprayRemote = function(data) {
+    Graffiti.prototype.sprayRemote = function(data) {
         var x = parseInt(data.data[0]);
         var y = parseInt(data.data[1]);
         var angle = parseInt(data.data[2]);
         this.spray(x, y, angle, this.sprayImages[data.color]);
     };
 
-    GraffityWall.prototype.writeText = function(text, x, y, color) {
+    Graffiti.prototype.writeText = function(text, x, y, color) {
         this.ctx.fillStyle = COLORS[color];
         this.ctx.font = '15px sans-serif';
         this.ctx.fillText(text, x + 7, y + 20);
     };
 
-    GraffityWall.prototype.writeLocalText = function(text) {
+    Graffiti.prototype.writeLocalText = function(text) {
         this.writeText(text, this.curr.x, this.curr.y, this.color);
         this.saveContext(text);
     };
 
-    GraffityWall.prototype.writeRemoteText = function(data) {
+    Graffiti.prototype.writeRemoteText = function(data) {
         var x = parseInt(data.data[0]);
         var y = parseInt(data.data[1]);
         var text = data.data[2];
         this.writeText(text, x, y, COLORS[data.color]);
     };
 
-    GraffityWall.prototype.paintFromObject = function(obj) {
+    Graffiti.prototype.paintFromObject = function(obj) {
         if (obj.type === TYPES.spray || obj.type === TYPES.pencil) {
             var method = (obj.type === TYPES.spray) ? this.sprayRemote : this.drawRemote;
             var prevXY;
@@ -314,26 +314,26 @@
         }
     };
 
-    GraffityWall.prototype.startSpraying = function() {
+    Graffiti.prototype.startSpraying = function() {
         this.interval = setInterval(this.sprayLocal.bind(this), SPRAY_INTERVAL);
         this.removeTextBox();
     };
 
-    GraffityWall.prototype.finishSpraying = function() {
+    Graffiti.prototype.finishSpraying = function() {
         clearInterval(this.interval);
         var data = this.sprayBatch.join('&');
         this.sprayBatch = [];
         this.save(data);
     };
 
-    GraffityWall.prototype.finishDrawing = function() {
+    Graffiti.prototype.finishDrawing = function() {
         var data = this.pencilBatch.join('&');
         this.pencilBatch = [];
         this.inDraw = false;
         this.save(data);
     };
 
-    GraffityWall.prototype.finishText = function(text) {
+    Graffiti.prototype.finishText = function(text) {
         var data = [this.curr.x, this.curr.y, text].join('_');
         this.save(data)
     };
@@ -345,7 +345,7 @@
         var spray = document.getElementById('spray');
         var pencil = document.getElementById('pencil');
 
-        GraffityWall.prototype.select = function(type) {
+        Graffiti.prototype.select = function(type) {
             this.type = type;
             text.style.backgroundColor   = (type === TYPES.text)   ? 'hsl(0,0%,75%)' : 'white';
             spray.style.backgroundColor  = (type === TYPES.spray)  ? 'hsl(0,0%,75%)' : 'white';
@@ -353,7 +353,7 @@
         };
     }());
 
-    GraffityWall.prototype.addTextBox = function() {
+    Graffiti.prototype.addTextBox = function() {
         if (!this.textBoxActive) {
             this.textBoxActive = true;
             this.textBox.style.left = this.curr.x + 'px';
@@ -363,7 +363,7 @@
         }
     };
 
-    GraffityWall.prototype.removeTextBox = function() {
+    Graffiti.prototype.removeTextBox = function() {
         if (this.textBoxActive) {
             this.textBox.parentNode.removeChild(this.textBox);
             this.textBox.value = '';
@@ -371,7 +371,7 @@
         }
     };
 
-    GraffityWall.prototype.moveTextBox = function() {
+    Graffiti.prototype.moveTextBox = function() {
         this.textBox.style.left = this.curr.x + 'px';
         this.textBox.style.top  = this.curr.y + 'px';
     };
@@ -393,6 +393,6 @@
         }
     };
 
-    global.GraffityWall = GraffityWall;
+    global.Graffiti = Graffiti;
 
 }(window));
